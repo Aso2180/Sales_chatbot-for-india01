@@ -1,17 +1,21 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { randomUUID } from 'crypto';
+import { auth } from '@/lib/auth';
+import { runQuery } from '@/lib/neo4j';
 import { buildSystemPrompt } from '@/lib/prompts/advisor';
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export async function POST(req: Request) {
-  try {
-    const { messages, userName } = await req.json();
+  const session = await auth();
+  if (!session?.user) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
-    if (!messages || !Array.isArray(messages)) {
-      return Response.json({ error: 'Invalid request' }, { status: 400 });
-    }
+  try {
+    const { messages, conversationId } = await req.json();
+    const userId   = session.user.id as string;
+    const userName = session.user.name ?? '';
 
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
@@ -20,12 +24,41 @@ export async function POST(req: Request) {
       messages,
     });
 
-    const content = response.content[0];
-    if (content.type !== 'text') {
-      return Response.json({ error: 'Unexpected response type' }, { status: 500 });
-    }
+    const assistantText = response.content[0].type === 'text'
+      ? response.content[0].text
+      : '';
 
-    return Response.json({ content: content.text });
+    // Neo4jに会話履歴を保存
+    const convId = conversationId ?? randomUUID();
+    const lastMsg = messages[messages.length - 1];
+
+    await runQuery(
+      `MERGE (u:User {id: $userId})
+       MERGE (c:Conversation {id: $convId})
+         ON CREATE SET c.startedAt = datetime()
+       SET c.lastActive = datetime()
+       MERGE (u)-[:HAS_CONVERSATION]->(c)
+       CREATE (mu:Message {
+         id: $muId, role: 'user', content: $userContent,
+         timestamp: datetime()
+       })
+       CREATE (ma:Message {
+         id: $maId, role: 'assistant', content: $assistantContent,
+         timestamp: datetime()
+       })
+       CREATE (c)-[:HAS_MESSAGE]->(mu)
+       CREATE (c)-[:HAS_MESSAGE]->(ma)`,
+      {
+        userId,
+        convId,
+        muId: randomUUID(),
+        userContent: lastMsg.content,
+        maId: randomUUID(),
+        assistantContent: assistantText,
+      }
+    );
+
+    return Response.json({ content: assistantText, conversationId: convId });
   } catch (error) {
     console.error('Chat API error:', error);
     return Response.json({ error: 'Internal server error' }, { status: 500 });
