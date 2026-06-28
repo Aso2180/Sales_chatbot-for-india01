@@ -16,7 +16,7 @@ export async function runQuery<T = Record<string, unknown>>(
   cypher: string,
   params: Record<string, unknown> = {}
 ): Promise<T[]> {
-  const session = getDriver().session();
+  const session = getDriver().session({ database: process.env.NEO4J_DATABASE });
   try {
     const result = await session.run(cypher, params);
     return result.records.map(r => r.toObject() as T);
