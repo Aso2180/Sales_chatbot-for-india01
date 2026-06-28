@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# インド向け混載 営業支援アプリ
 
-## Getting Started
+**Japan→India LCL（混載）貨物の営業担当者向けフルスタックWebアプリ**
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## アプリの概要
+
+日本からインドへの混載（LCL）輸送を扱う営業担当者が、日々の業務で必要な情報を一画面に集約し、AIアドバイザーとの対話でリアルタイムに営業課題を解決できる支援ツールです。
+
+---
+
+## 開発の背景と狙い
+
+### 課題
+- 航路・運賃・規制・手続きなどの情報が分散しており、営業担当者が都度調べる必要があった
+- チームの集荷目標に対して個人の貢献状況を把握しにくかった
+- インド特有の州別規制・品目規制・輸送禁止事項などの知識習得に時間がかかっていた
+- 顧客からの問い合わせに即答できず、商談機会を逃すケースがあった
+
+### 狙い
+- **情報の一元化**：航路・価格・法規制・チェックリスト・トラブル事例をタブで即座に参照
+- **AI活用による即応力向上**：Claude AIが個人名で対話し、状況に応じた営業アドバイスを提供
+- **目標管理の可視化**：チーム・個人の集荷目標と実績をダッシュボードで共有
+- **ナレッジの標準化**：熟練者の知識をアプリに組み込み、チーム全体のレベルアップを促進
+
+---
+
+## 主な機能（8タブ構成）
+
+| タブ | 機能 |
+|------|------|
+| 集荷ダッシュボード | 月別集荷実績（2026年1〜5月）・航路別・顧客別グラフ表示 |
+| 航路別分析 | 6航路（神戸/大阪/東京→Chennai/Mumbai/Nhava Sheva）の月別詳細 |
+| 売値ガイドライン | 航路・サービスタイプ別の運賃目安と値引き交渉の判断基準 |
+| ゴール＆アクション | チーム・個人の月次目標と達成に向けたアクションリスト |
+| 船積み手順 | B/L発行・CFS搬入・通関など20ステップのチェックリスト |
+| 州別規制 | インド14州の港湾・アルコール・輸送規制情報 |
+| 品目別規制 | 12品目カテゴリのBIS/FSSAI/CDSCO認証要件 |
+| トラブル対処 | 9パターンのよくあるトラブルと対処法・再発防止策 |
+
+---
+
+## AIアドバイザー機能
+
+- **Claude Sonnet（Anthropic API）** をサーバーサイドで安全に呼び出し
+- ログインユーザー名を自動取得し、個人名で対話（例：「田中さん、こんにちは」）
+- インド向け混載輸送の専門知識をシステムプロンプトに組み込み済み
+- **会話履歴をNeo4jに永続保存**し、次回ログイン時に復元
+- クイックチップスで頻出相談をワンクリック入力
+
+---
+
+## 技術スタック
+
+| 分類 | 技術 |
+|------|------|
+| フレームワーク | Next.js 16（App Router・TypeScript） |
+| 認証 | NextAuth v5（メール＋パスワード・JWT） |
+| データベース | Neo4j Aura Free（グラフDB） |
+| AI | Anthropic Claude claude-sonnet-4-6 |
+| グラフ | Chart.js / react-chartjs-2 |
+| ホスティング | Vercel |
+
+---
+
+## システム構成
+
+```
+ブラウザ（クライアント）
+  └─ Next.js App（Vercel）
+       ├─ proxy.ts（認証ガード・ルート保護）
+       ├─ /api/chat（Claude API呼び出し＋Neo4j保存）
+       ├─ /api/history（会話履歴取得）
+       ├─ /api/register（ユーザー登録）
+       └─ /api/auth（NextAuth認証）
+            ├─ Anthropic API（Claude）
+            └─ Neo4j Aura（ユーザー・会話・メッセージ）
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## セキュリティ
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- APIキー・DB認証情報はすべてサーバーサイドの環境変数で管理（フロントエンド非公開）
+- パスワードはbcryptでハッシュ化してNeo4jに保存
+- 全ルートをproxy.tsで認証チェック（公開ページは/login・/registerのみ）
+- JWTセッション（AUTH_SECRET管理）
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 開発フェーズ
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Phase 1（完了）**：HTMLからNext.jsへの変換・Claude APIのサーバーサイド化・Vercelデプロイ
+- **Phase 2（完了）**：メール＋パスワード認証・Neo4jによる会話履歴永続化
+- **Phase 3（予定）**：集荷データのNeo4j管理・管理者UI
+- **Phase 4（予定）**：会話コンテキストを活用したAIアドバイザー強化
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 本番URL
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+https://sales-chatbot-for-india01.vercel.app
