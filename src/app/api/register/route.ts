@@ -38,7 +38,8 @@ export async function POST(req: Request) {
 
     return Response.json({ ok: true });
   } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
     console.error('Register error:', error);
-    return Response.json({ error: 'サーバーエラーが発生しました' }, { status: 500 });
+    return Response.json({ error: `DB接続エラー: ${msg}` }, { status: 500 });
   }
 }
