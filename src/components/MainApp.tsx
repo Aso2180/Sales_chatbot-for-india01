@@ -44,16 +44,16 @@ export default function MainApp({ userName }: Props) {
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
           <div className="hdr-badge">🤖 AI搭載 ・ データ基準：2026年1〜5月</div>
-          <div style={{ fontSize: 11, color: 'var(--text2)' }}>👤 {userName}</div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.80)' }}>👤 {userName}</div>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
             style={{
               fontSize: 10,
               padding: '3px 10px',
               borderRadius: 20,
-              border: '1px solid var(--border2)',
-              background: 'transparent',
-              color: 'var(--text3)',
+              border: '1px solid rgba(255,255,255,0.30)',
+              background: 'rgba(255,255,255,0.12)',
+              color: 'rgba(255,255,255,0.80)',
               cursor: 'pointer',
             }}
           >

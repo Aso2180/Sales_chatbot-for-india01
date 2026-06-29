@@ -48,6 +48,7 @@ export default function RegisterPage() {
         border: '1px solid var(--border2)',
         borderRadius: 'var(--radius)',
         padding: 32,
+        boxShadow: '0 4px 24px rgba(0,60,120,0.12)',
       }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{
@@ -130,7 +131,7 @@ export default function RegisterPage() {
 
         <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text3)' }}>
           既にアカウントをお持ちの方は{' '}
-          <Link href="/login" style={{ color: 'var(--ocean-lt)' }}>ログイン</Link>
+          <Link href="/login" style={{ color: 'var(--ocean)' }}>ログイン</Link>
         </div>
       </div>
     </div>

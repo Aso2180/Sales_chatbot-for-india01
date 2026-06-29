@@ -48,6 +48,7 @@ export default function LoginPage() {
         border: '1px solid var(--border2)',
         borderRadius: 'var(--radius)',
         padding: 32,
+        boxShadow: '0 4px 24px rgba(0,60,120,0.12)',
       }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{
@@ -145,7 +146,7 @@ export default function LoginPage() {
 
         <div style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: 'var(--text3)' }}>
           アカウントをお持ちでない方は{' '}
-          <Link href="/register" style={{ color: 'var(--ocean-lt)' }}>新規登録</Link>
+          <Link href="/register" style={{ color: 'var(--ocean)' }}>新規登録</Link>
         </div>
       </div>
     </div>
